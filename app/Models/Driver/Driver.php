@@ -5,6 +5,7 @@ namespace App\Models\Driver;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class Driver extends Authenticatable
 {
@@ -56,4 +57,24 @@ class Driver extends Authenticatable
     {
         return $this->hasMany(PenarikanDana::class, 'driver_id');
     }
+public function tokens()
+{
+    // Solusi 1: Gunakan model khusus yang sudah dikonfigurasi koneksinya
+    return $this->morphMany(PersonalAccessToken::class, 'tokenable');
+}
+
+// Tambahkan method ini untuk override createToken
+// public function createToken(string $name, array $abilities = ['*'], DateTimeInterface $expiresAt = null)
+// {
+//     // Simpan token di database utama
+//     config(['database.default' => 'mysql']); // Ganti dengan connection default Anda
+    
+//     $token = parent::createToken($name, $abilities, $expiresAt);
+    
+//     // Kembalikan ke connection semula
+//     config(['database.default' => 'mysql_driver']);
+    
+//     return $token;
+// }
+
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DokumenDriver extends Model
 {
+
     protected $connection = 'mysql_driver';
     protected $table = 'DOKUMEN_DRIVER';
     protected $primaryKey = 'dokumen_id';

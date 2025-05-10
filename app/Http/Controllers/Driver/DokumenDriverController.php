@@ -7,6 +7,7 @@ use App\Models\Driver\DokumenDriver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class DokumenDriverController extends Controller
 {
@@ -26,34 +27,63 @@ class DokumenDriverController extends Controller
     // POST /api/driver/dokumen (Upload dokumen baru)
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'jenis_dokumen' => 'required|in:KTP,SIM,STNK,SKCK',
-            'nomor_dokumen' => 'required|string',
-            'file_dokumen' => 'required|file|mimes:pdf,jpg,png|max:2048'
-        ]);
+        try {
+            $user = $request->user();
 
-        if ($validator->fails()) {
+            Log::info('Autentikasi berhasil untuk unggah dokumen', [
+                'driver_id' => $user->driver_id ?? null,
+                'email' => $user->email ?? 'tidak diketahui',
+            ]);
+
+            $validator = Validator::make($request->all(), [
+                'jenis_dokumen' => 'required|in:KTP,SIM,STNK,SKCK',
+                'nomor_dokumen' => 'required|string',
+                'file_dokumen' => 'required|file|mimes:pdf,jpg,png|max:2048',
+            ]);
+
+            if ($validator->fails()) {
+                Log::warning('Validasi dokumen gagal', [
+                    'driver_id' => $user->driver_id ?? null,
+                    'errors' => $validator->errors()
+                ]);
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $filePath = $request->file('file_dokumen')->store('dokumen_driver');
+
+            $dokumen = DokumenDriver::create([
+                'driver_id' => $user->driver_id,
+                'jenis_dokumen' => $request->jenis_dokumen,
+                'nomor_dokumen' => $request->nomor_dokumen,
+                'file_dokumen' => $filePath,
+                'status_verifikasi' => 'pending'
+            ]);
+
+            Log::info('Dokumen berhasil disimpan', [
+                'dokumen_id' => $dokumen->id,
+                'driver_id' => $user->driver_id,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $dokumen
+            ], 201);
+
+        } catch (\Exception $e) {
+            Log::error('Gagal menyimpan dokumen driver', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'driver_id' => $request->user()->driver_id ?? null,
+            ]);
+
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+                'message' => 'Terjadi kesalahan saat menyimpan dokumen.'
+            ], 500);
         }
-
-        // Upload file
-        $filePath = $request->file('file_dokumen')->store('dokumen_driver');
-
-        $dokumen = DokumenDriver::create([
-            'driver_id' => $request->user()->driver_id,
-            'jenis_dokumen' => $request->jenis_dokumen,
-            'nomor_dokumen' => $request->nomor_dokumen,
-            'file_dokumen' => $filePath,
-            'status_verifikasi' => 'pending'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data' => $dokumen
-        ], 201);
     }
 
     // GET /api/driver/dokumen/{id} (Detail dokumen)

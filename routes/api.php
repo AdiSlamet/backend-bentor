@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DokumenVerifikasiController;
 use App\Http\Controllers\Driver\DokumenDriverController as DriverDokumenDriverController;
 use App\Http\Controllers\Driver\KendaraanController;
 use App\Http\Controllers\Driver\DriverController;
+use App\Http\Controllers\Driver\DokumenDriverController;
 use App\Http\Controllers\Admin\AreaOperasionalController;
 use App\Http\Controllers\Admin\PenarikanDanaController;
 use App\Http\Controllers\Admin\PromosiController;
@@ -22,6 +23,8 @@ use App\Http\Controllers\Shared\PembayaranController;
 use App\Http\Controllers\Shared\PerjalananController;
 use App\Http\Controllers\Shared\RatingController;
 use App\Http\Controllers\User\TopupSaldoController;
+use App\Http\Middleware\DriverMiddleware;
+
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -29,6 +32,7 @@ Route::get('/user', function (Request $request) {
 
 
 // Admin Auth Routes
+// chack
 Route::prefix('admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login']);
     Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('auth:admin');
@@ -39,7 +43,8 @@ Route::prefix('admin')->group(function () {
 // ini bagian untuk admin
 
 // crud admin
-Route::get('/admins', [AdminController::class, 'index']);
+// chack
+Route::get('/admins', [AdminController::class, 'index'])->middleware('auth:admin');
 Route::get('/admins/{id}', [AdminController::class, 'show']);
 Route::post('/admins', [AdminController::class, 'store']);
 Route::put('/admins/{id}', [AdminController::class, 'update']);
@@ -60,11 +65,12 @@ Route::delete('/tiket-bantuan/{id}', [TiketBantuanController::class, 'destroy'])
 
 // CRUD Tiket Respon
 Route::get('/tiket-bantuan/{tiket_id}/respon', [TiketResponController::class, 'index']);
-Route::post('/tiket-bantuan/{tiket_id}/respon', [TiketResponController::class, 'store']);
+Route::post('/tiket-respon/{tiket_id}', [TiketResponController::class, 'store']);//id nya ngambil dari tiket bantuan
 Route::put('/tiket-bantuan/{tiket_id}/respon/{id}', [TiketResponController::class, 'update']);
 Route::delete('/tiket-bantuan/{tiket_id}/respon/{id}', [TiketResponController::class, 'destroy']);
 
 // CRUD area operasional
+// chack
 Route::get('/area-operasional', [AreaOperasionalController::class, 'index']);
 Route::get('/area-operasional/{id}', [AreaOperasionalController::class, 'show']);
 Route::post('/area-operasional', [AreaOperasionalController::class, 'store']);
@@ -72,6 +78,7 @@ Route::put('/area-operasional/{id}', [AreaOperasionalController::class, 'update'
 Route::delete('/area-operasional/{id}', [AreaOperasionalController::class, 'destroy']);
 
 // CRUD Dokumen Verifikasi
+// chack
 Route::get('/dokumen', [DokumenVerifikasiController::class, 'index']);
 Route::get('/dokumen/{id}', [DokumenVerifikasiController::class, 'show']);
 // Route::post('/dokumen', [DokumenVerifikasiController::class, 'store']);
@@ -87,6 +94,7 @@ Route::put('/penarikan-dana/{id}', [PenarikanDanaController::class, 'update']);
 Route::delete('/penarikan-dana/{id}', [PenarikanDanaController::class, 'destroy']);
 
 // CRUD Promosi
+// chack
 Route::get('/promosi', [PromosiController::class, 'index']);
 Route::get('/promosi/{id}', [PromosiController::class, 'show']);
 Route::post('/promosi', [PromosiController::class, 'store']);
@@ -94,6 +102,7 @@ Route::put('/promosi/{id}', [PromosiController::class, 'updateStatus']);
 Route::delete('/promosi/{id}', [PromosiController::class, 'destroy']);
 
 // CRUD Tarif
+// chack
 Route::get('/tarif', [TarifController::class, 'index']);
 Route::get('/tarif/{id}', [TarifController::class, 'show']);
 Route::post('/tarif', [TarifController::class, 'store']);
@@ -101,6 +110,7 @@ Route::put('/tarif/{id}', [TarifController::class, 'update']);
 Route::delete('/tarif/{id}', [TarifController::class, 'destroy']);
 
 // CRUD Tiket Bantuan
+//cek tapi masih belum ada user
 Route::get('/tiket-bantuan', [TiketBantuanController::class, 'index']);
 Route::get('/tiket-bantuan/{id}', [TiketBantuanController::class, 'show']);
 Route::post('/tiket-bantuan', [TiketBantuanController::class, 'store']);
@@ -125,11 +135,15 @@ Route::middleware('auth:driver')->prefix('driver')->group(function () {
 
 Route::prefix('driver')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:driver');
-    Route::get('/me', [AuthController::class, 'me'])->middleware('auth:driver');
+    
+    Route::middleware([DriverMiddleware::class])->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+    });
 });
 
 // CRUD Driver
+// chack
 Route::middleware('auth:driver')->prefix('driver')->group(function () {
 
 });
@@ -140,11 +154,12 @@ Route::put('/drivers/{id}', [DriverController::class, 'update']);
 Route::delete('/drivers/{id}', [DriverController::class, 'destroy']);
 
 // CRUD Dokumen Driver
-Route::get('/dokumen-driver', [DriverDokumenDriverController::class, 'index']);
-Route::get('/dokumen-driver/{id}', [DriverDokumenDriverController::class, 'show']);
-Route::post('/dokumen-driver', [DriverDokumenDriverController::class, 'store']);
-Route::put('/dokumen-driver/{id}', [DriverDokumenDriverController::class, 'update']);
-Route::delete('/dokumen-driver/{id}', [DriverDokumenDriverController::class, 'destroy']);
+// ini tu harus login driver dulu belum tercek
+Route::get('/dokumen-driver', [DriverController::class, 'index']);
+Route::get('/dokumen-driver/{id}', [DriverController::class, 'show']);
+Route::post('/dokumen-driver', [DokumenDriverController::class, 'store'])->middleware('driver');
+Route::put('/dokumen-driver/{id}', [DriverController::class, 'update']);
+Route::delete('/dokumen-driver/{id}', [DriverController::class, 'destroy']);
 
 // CRUD Kendaraan
 Route::get('/kendaraan', [KendaraanController::class, 'index'])->middleware('auth:driver');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\TiketRespon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Admin\Admin;
 
 class TiketResponController extends Controller
 {
@@ -16,9 +17,12 @@ class TiketResponController extends Controller
             'pesan' => 'required|string'
         ]);
 
+        $admin = Admin::first(); // jika pengen ngambil admin yang login ini di hapus
+        $admin_id = $admin->admin_id; // jika pengen ngambil admin yang login ini di hapus
+
         $respon = TiketRespon::create([
             'tiket_id' => $tiket_id,
-            'admin_id' => Auth::id(), // Admin yang sedang login
+            'admin_id' => $admin_id, // Admin yang sedang login //jika pengen ngambil admin yang login Auth::id()
             'pesan' => $request->pesan
         ]);
 

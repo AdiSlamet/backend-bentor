@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up()
     {
         // Simpan di salah satu database (contoh: admin)
-        DB::connection('mysql_admin')->getSchemaBuilder()->create('PERJALANAN', function (Blueprint $table) {
+        DB::connection('mysql_shared')->getSchemaBuilder()->create('PERJALANAN', function (Blueprint $table) {
             $table->id('perjalanan_id');
             $table->unsignedBigInteger('user_id'); // Relasi ke PENUMPANG di database user
             $table->unsignedBigInteger('driver_id'); // Relasi ke DRIVER di database driver
@@ -40,7 +40,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        DB::connection('mysql_admin')->getSchemaBuilder()->create('PEMBAYARAN', function (Blueprint $table) {
+        DB::connection('mysql_shared')->getSchemaBuilder()->create('PEMBAYARAN', function (Blueprint $table) {
             $table->id('pembayaran_id');
             $table->foreignId('perjalanan_id')->constrained('PERJALANAN', 'perjalanan_id');
             $table->enum('metode', ['cash', 'e-wallet']);
@@ -52,7 +52,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        DB::connection('mysql_admin')->getSchemaBuilder()->create('RATING', function (Blueprint $table) {
+        DB::connection('mysql_shared')->getSchemaBuilder()->create('RATING', function (Blueprint $table) {
             $table->id('rating_id');
             $table->foreignId('perjalanan_id')->constrained('PERJALANAN', 'perjalanan_id');
             $table->unsignedBigInteger('user_id'); // Relasi ke PENUMPANG
@@ -63,7 +63,7 @@ return new class extends Migration {
             $table->timestamps();
         });
 
-        DB::connection('mysql_admin')->getSchemaBuilder()->create('TRACKING_PERJALANAN', function (Blueprint $table) {
+        DB::connection('mysql_shared')->getSchemaBuilder()->create('TRACKING_PERJALANAN', function (Blueprint $table) {
             $table->id('tracking_id');
             $table->foreignId('perjalanan_id')->constrained('PERJALANAN', 'perjalanan_id');
             $table->decimal('latitude', 10, 8);
@@ -71,7 +71,7 @@ return new class extends Migration {
             $table->dateTime('waktu');
         });
 
-        DB::connection('mysql_admin')->getSchemaBuilder()->create('NOTIFIKASI', function (Blueprint $table) {
+        DB::connection('mysql_shared')->getSchemaBuilder()->create('NOTIFIKASI', function (Blueprint $table) {
             $table->id('notifikasi_id');
             $table->unsignedBigInteger('user_id')->nullable(); // Relasi ke PENUMPANG
             $table->unsignedBigInteger('driver_id')->nullable(); // Relasi ke DRIVER
@@ -85,10 +85,10 @@ return new class extends Migration {
 
     public function down()
     {
-        DB::connection('mysql_admin')->getSchemaBuilder()->dropIfExists('NOTIFIKASI');
-        DB::connection('mysql_admin')->getSchemaBuilder()->dropIfExists('TRACKING_PERJALANAN');
-        DB::connection('mysql_admin')->getSchemaBuilder()->dropIfExists('RATING');
-        DB::connection('mysql_admin')->getSchemaBuilder()->dropIfExists('PEMBAYARAN');
-        DB::connection('mysql_admin')->getSchemaBuilder()->dropIfExists('PERJALANAN');
+        DB::connection('mysql_shared')->getSchemaBuilder()->dropIfExists('NOTIFIKASI');
+        DB::connection('mysql_shared')->getSchemaBuilder()->dropIfExists('TRACKING_PERJALANAN');
+        DB::connection('mysql_shared')->getSchemaBuilder()->dropIfExists('RATING');
+        DB::connection('mysql_shared')->getSchemaBuilder()->dropIfExists('PEMBAYARAN');
+        DB::connection('mysql_shared')->getSchemaBuilder()->dropIfExists('PERJALANAN');
     }
 };

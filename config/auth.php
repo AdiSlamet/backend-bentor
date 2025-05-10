@@ -33,6 +33,10 @@ return [
             'driver' => 'sanctum',
             'provider' => 'drivers',
         ],
+        // 'api' => [
+        //     'driver' => 'sanctum',
+        //     'provider' => 'drivers',
+        // ],
         'user' => [
             'driver' => 'sanctum',
             'provider' => 'users',
